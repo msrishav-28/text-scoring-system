@@ -1,45 +1,60 @@
+# =========================================
+# Dependencies
+# =========================================
+/node_modules
+/backend/venv
+/frontend/build
+/frontend/dist
+
+# =========================================
+# Secrets & Environment Variables
+#
+# Ignore all .env files by default.
+# Add an exception for example files.
+# =========================================
+.env
+.env.*
+!.env.example
+
+# =========================================
 # Python
-backend/venv/
-backend/__pycache__/
-backend/*.pyc
-backend/*.pyo
-backend/*.pyd
-backend/.Python
-backend/*.so
-backend/.env
-backend/.pytest_cache/
-backend/.coverage
-backend/htmlcov/
-backend/dist/
-backend/build/
-backend/*.egg-info/
-backend/cache/*
-backend/exports/*
-!backend/cache/.gitkeep
-!backend/exports/.gitkeep
+# =========================================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
 
-# Node
-frontend/node_modules/
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
-frontend/build/
-frontend/dist/
+# =========================================
+# Project-specific - Caches, Logs, Exports
+# =========================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+/backend/cache/*
+/backend/exports/*
+!/backend/cache/.gitkeep
+!/backend/exports/.gitkeep
 
-# IDE
+# =========================================
+# IDE & Editor files
+# =========================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# =========================================
+# Test & Coverage Reports
+# =========================================
+coverage/
+
+# =========================================
+# OS-specific files
+# =========================================
 .DS_Store
 Thumbs.db
-
-# Project specific
-*.log
