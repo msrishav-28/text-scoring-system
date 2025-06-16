@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiClock, FiFileText, FiTrash2, FiSearch } from 'react-icons/fi';
+import { FiClock, FiTrash2, FiSearch } from 'react-icons/fi';
 import { getHistory, deleteHistoryItem } from '../services/api';
 import { HistoryItem } from '../types';
 import toast from 'react-hot-toast';
@@ -9,7 +9,6 @@ const HistoryPage: React.FC = () => {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   useEffect(() => {
     fetchHistory();
@@ -48,12 +47,6 @@ const HistoryPage: React.FC = () => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
-  };
-
-  const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-100';
-    if (score >= 60) return 'bg-yellow-100';
-    return 'bg-red-100';
   };
 
   return (
@@ -169,7 +162,7 @@ const HistoryPage: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
                           // In a real app, this would navigate to the analysis
-                          toast.info('View analysis feature coming soon!');
+                          toast('View analysis feature coming soon!');
                         }}
                         className="text-primary-600 hover:text-primary-700 font-medium text-sm"
                       >

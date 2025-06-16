@@ -11,6 +11,46 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Mapping of common special characters to their standard equivalents
+SPECIAL_CHAR_MAP = {
+    '“': '"',
+    '”': '"',
+    '‘': "'",
+    '’': "'",
+    '—': '-',
+    '–': '-',
+    '…': '...',
+    '´': "'",
+    'â€™': "'",
+    'â€œ': '"',
+    'â€': '"',
+    'â€”': '--',
+    'â€“': '-',
+    'â€¦': '...',
+    'â€¢': '*',
+    '·': '*',
+    '•': '*',
+    '&': 'and',
+    '€': 'EUR',
+    '£': 'GBP',
+    '$': 'USD',
+    '¥': 'JPY',
+}
+
+def expand_special_chars(text: str) -> str:
+    """Expand special characters to their standard equivalents.
+    
+    Args:
+        text: Input text
+        
+    Returns:
+        Text with expanded special characters
+    """
+    for old, new in SPECIAL_CHAR_MAP.items():
+        text = text.replace(old, new)
+    
+    return text
+
 class TextPreprocessor:
     """Utility class for text preprocessing."""
     
@@ -159,7 +199,7 @@ class TextPreprocessor:
             'â€œ': '"',
             'â€': '"',
             'â€"': '—',
-            'â€"': '–',
+            'â€“': '–',
             'Ã©': 'é',
             'Ã¨': 'è',
             'Ã ': 'à',
@@ -168,7 +208,7 @@ class TextPreprocessor:
             'Ã®': 'î',
             'Ã§': 'ç',
             'Ã‰': 'É',
-            'âˆ'': '-',
+            "âˆ'": '-',
         }
         
         for old, new in replacements.items():
@@ -209,12 +249,12 @@ class TextPreprocessor:
             Text with normalized quotes
         """
         # Smart quotes to regular quotes
-        text = text.replace('"', '"').replace('"', '"')
-        text = text.replace(''', "'").replace(''', "'")
+        text = text.replace('“', '"').replace('”', '"')
+        text = text.replace('‘', "'").replace('’', "'")
         
         # Fix apostrophes
-        text = re.sub(r'(\w)'(\w)', r"\1'\2", text)  # Contractions
-        text = re.sub(r'(\w)'s\b', r"\1's", text)    # Possessives
+        text = re.sub(r"(\w)'(\w)", r"\1'\2", text)  # Contractions
+        text = re.sub(r"(\w)'s\b", r"\1's", text)   # Possessives
         
         return text
     
@@ -254,7 +294,7 @@ class TextPreprocessor:
         return text
     
     def split_into_chunks(self, text: str, chunk_size: int = 1000, 
-                         overlap: int = 100) -> List[str]:
+                          overlap: int = 100) -> List[str]:
         """Split text into overlapping chunks for processing.
         
         Args:

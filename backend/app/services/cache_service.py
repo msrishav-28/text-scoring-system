@@ -3,13 +3,16 @@
 import hashlib
 import json
 import time
-from typing import Any, Optional
+from typing import Any, Optional, Dict
 from pathlib import Path
 import diskcache
 import logging
+import redis.asyncio as redis
+from datetime import datetime, timedelta
 
 from app.config import settings
-from app.models.schemas import AnalysisResult
+from app.models.schemas import AnalysisResult, HistoryItem
+from app.utils.text_preprocessor import preprocess_text
 
 logger = logging.getLogger(__name__)
 

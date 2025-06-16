@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiFileText, FiClock, FiDownload } from 'react-icons/fi';
+import { FiFileText, FiClock } from 'react-icons/fi';
 
 const Navbar: React.FC = () => {
   const location = useLocation();

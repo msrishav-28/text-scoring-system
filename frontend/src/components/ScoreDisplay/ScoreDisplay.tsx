@@ -103,12 +103,6 @@ interface ScoreDisplayProps {
 }
 
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ scores, trends = {} }) => {
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return '#22c55e'; // green
-    if (score >= 60) return '#f59e0b'; // yellow
-    return '#ef4444'; // red
-  };
-
   const getScoreLabel = (score: number) => {
     if (score >= 90) return 'Excellent';
     if (score >= 80) return 'Very Good';
