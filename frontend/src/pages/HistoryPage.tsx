@@ -4,11 +4,13 @@ import { FiClock, FiTrash2, FiSearch } from 'react-icons/fi';
 import { getHistory, deleteHistoryItem } from '../services/api';
 import { HistoryItem } from '../types';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const HistoryPage: React.FC = () => {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchHistory();
@@ -36,6 +38,10 @@ const HistoryPage: React.FC = () => {
       toast.error('Failed to delete item');
       console.error('Delete error:', error);
     }
+  };
+
+  const handleViewDetails = (id: string) => {
+    navigate(`/analysis/${id}`);
   };
 
   const filteredItems = historyItems.filter(item =>
@@ -160,10 +166,7 @@ const HistoryPage: React.FC = () => {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                          // In a real app, this would navigate to the analysis
-                          toast('View analysis feature coming soon!');
-                        }}
+                        onClick={() => handleViewDetails(item.id)}
                         className="text-primary-600 hover:text-primary-700 font-medium text-sm"
                       >
                         View Details →

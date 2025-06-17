@@ -55,20 +55,64 @@ export interface RelevanceScore {
   suggestions: string[];
 }
 
+export interface GrammarError {
+  message: string;
+  context: string;
+  offset: number;
+  length: number;
+  suggestion: string | null;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  position: [number, number];
+}
+
+export interface CoherenceConnection {
+  sentence_index: number;
+  description: string;
+  suggestion?: string;
+}
+
 export interface AnalysisResult {
+  id: string;
+  result_id: string;
+  text: string;
+  topic?: string;
   overall_score: number;
-  grammar: GrammarScore;
-  coherence: CoherenceScore;
-  relevance: RelevanceScore;
   word_count: number;
   sentence_count: number;
   paragraph_count: number;
   avg_sentence_length: number;
   processing_time: number;
-  timestamp: string;
   feedback_summary: string;
   strengths: string[];
   areas_for_improvement: string[];
+  timestamp: string;
+  
+  // Grammar analysis
+  grammar: {
+    score: number;
+    feedback: string;
+    errors: GrammarError[];
+  };
+  
+  // Coherence analysis
+  coherence: {
+    score: number;
+    feedback: string;
+    readability_scores: {
+      [key: string]: number;
+    };
+    weak_connections: CoherenceConnection[];
+  };
+  
+  // Relevance analysis
+  relevance: {
+    score: number;
+    feedback: string;
+    topic_coverage: {
+      [key: string]: number;
+    };
+    key_terms_found: string[];
+  };
 }
 
 export interface TextAnalysisRequest {

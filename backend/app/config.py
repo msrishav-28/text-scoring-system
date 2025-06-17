@@ -1,7 +1,7 @@
 """Configuration settings for the Text Scoring System."""
 
 import os
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings."""
     
     # API Keys
-    gemini_api_key: str = ""
+    gemini_api_key: Optional[str] = None
     groq_api_key: str = ""
     huggingface_api_key: str = ""
     
@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     # Model Configuration
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     spacy_model: str = "en_core_web_sm"
+    gemini_model: str = "gemini-1.0-pro"
     
     # Scoring Weights (customizable)
     grammar_weight: float = 0.4
@@ -52,11 +53,14 @@ class Settings(BaseSettings):
     min_text_length: int = 50
     max_text_length: int = 50000
     
+    # Data Directory
+    data_dir: Path = Path("data")
+    
     class Config:
         env_file = ".env"
         case_sensitive = False
     
-    @field_validator("cache_dir", "export_dir")
+    @field_validator("cache_dir", "export_dir", "data_dir")
     def create_directories(cls, v):
         """Create directories if they don't exist."""
         v.mkdir(exist_ok=True)

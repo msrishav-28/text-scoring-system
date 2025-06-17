@@ -6,11 +6,15 @@ from typing import Dict, Any, List, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import re
+import logging
+import os
 
 from app.analyzers.base_analyzer import BaseAnalyzer
 from app.models.schemas import Error, ErrorType, Severity, GrammarScore
 from app.services.gemini_service import GeminiService
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 class GrammarAnalyzer(BaseAnalyzer):
     """Analyzer for grammar, spelling, and style checking."""
@@ -28,7 +32,12 @@ class GrammarAnalyzer(BaseAnalyzer):
             self.nlp = spacy.load(settings.spacy_model)
         
         # Initialize LanguageTool
-        self.language_tool = language_tool_python.LanguageTool('en-US')
+        try:
+            self.language_tool = language_tool_python.LanguageTool('en-US')
+            logger.info("LanguageTool initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize LanguageTool: {str(e)}")
+            self.language_tool = None
         
         # Initialize Gemini service
         self.gemini_service = GeminiService() if settings.gemini_api_key else None
@@ -46,6 +55,20 @@ class GrammarAnalyzer(BaseAnalyzer):
         Returns:
             GrammarScore object with analysis results
         """
+        if not self.language_tool:
+            return GrammarScore(
+                score=0.0,
+                errors=[],
+                error_density=0.0,
+                suggestions=[],
+                details={
+                    "error_counts": {},
+                    "readability": {},
+                    "sentence_variety": {},
+                    "vocabulary_level": {}
+                }
+            )
+
         # Preprocess text
         processed_text = self.preprocess_text(text)
         

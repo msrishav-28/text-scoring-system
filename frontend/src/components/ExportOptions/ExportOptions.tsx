@@ -55,10 +55,8 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // For demo purposes, we'll simulate the export
-      // In real implementation, this would use the actual result ID
       const exportRequest = {
-        result_id: 'demo-result-id',
+        result_id: result.result_id,
         format: selectedFormat,
         include_visualizations: includeVisualizations,
         include_detailed_feedback: includeDetailedFeedback,

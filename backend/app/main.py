@@ -20,7 +20,9 @@ from app.analyzers.coherence_analyzer import CoherenceAnalyzer
 from app.analyzers.relevance_analyzer import RelevanceAnalyzer
 from app.services.export_service import ExportService
 from app.services.cache_service import CacheService
+from app.services.db_service import DatabaseService
 from app.utils.text_preprocessor import TextPreprocessor
+from app.utils.db_init import init_database
 
 # Configure logging
 logging.basicConfig(
@@ -58,10 +60,8 @@ coherence_analyzer = CoherenceAnalyzer()
 relevance_analyzer = RelevanceAnalyzer()
 export_service = ExportService()
 cache_service = CacheService()
+db_service = DatabaseService()
 text_preprocessor = TextPreprocessor()
-
-# Store for analysis history (in production, use a database)
-analysis_history: Dict[str, AnalysisResult] = {}
 
 @app.on_event("startup")
 async def startup_event():
@@ -76,6 +76,11 @@ async def startup_event():
     import nltk
     nltk.download('punkt', quiet=True)
     nltk.download('stopwords', quiet=True)
+    
+    # Initialize database
+    if not init_database():
+        logger.error("Failed to initialize database")
+        raise Exception("Database initialization failed")
     
     logger.info("Text Scoring System started successfully!")
 
@@ -191,11 +196,15 @@ async def analyze_text(input_data: TextInput):
         # Cache result
         await cache_service.set(cache_key, result)
         
-        # Store in history
+        # Store in database
         result_id = str(uuid.uuid4())
-        analysis_history[result_id] = result
+        db_service.store_result(result_id, input_data.text, input_data.topic, result)
         
-        return result
+        # Add result_id to response
+        result_dict = result.dict()
+        result_dict['result_id'] = result_id
+        
+        return result_dict
         
     except Exception as e:
         logger.error(f"Analysis error: {e}")
@@ -272,11 +281,10 @@ async def analyze_file(
 async def export_analysis(export_request: ExportRequest):
     """Export analysis results."""
     try:
-        # Get result from history
-        if export_request.result_id not in analysis_history:
+        # Get result from database
+        result = db_service.get_result(export_request.result_id)
+        if not result:
             raise HTTPException(status_code=404, detail="Analysis result not found")
-        
-        result = analysis_history[export_request.result_id]
         
         # Generate export
         file_path = await export_service.export_result(
@@ -317,33 +325,28 @@ async def download_file(filename: str):
 @app.get("/history", response_model=List[HistoryItem])
 async def get_history(limit: int = 10):
     """Get analysis history."""
-    # Convert history to list of HistoryItems
-    history_items = []
-    
-    for result_id, result in list(analysis_history.items())[-limit:]:
-        # Get text preview (first 100 characters)
-        # Note: In production, store original text separately
-        text_preview = "Text analysis result"
-        
-        history_items.append(HistoryItem(
-            id=result_id,
-            timestamp=result.timestamp,
-            text_preview=text_preview,
-            overall_score=result.overall_score,
-            word_count=result.word_count,
-            topic=None  # Would need to store this separately
-        ))
-    
-    return history_items
+    return db_service.get_history(limit)
 
 @app.delete("/history/{result_id}")
 async def delete_history_item(result_id: str):
     """Delete a history item."""
-    if result_id not in analysis_history:
+    if not db_service.delete_result(result_id):
         raise HTTPException(status_code=404, detail="Result not found")
     
-    del analysis_history[result_id]
     return {"message": "Deleted successfully"}
+
+@app.get("/analysis/{result_id}", response_model=AnalysisResult)
+async def get_analysis_result(result_id: str):
+    """Get a specific analysis result."""
+    result = db_service.get_result(result_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Analysis result not found")
+    
+    # Add result_id to response
+    result_dict = result.dict()
+    result_dict['result_id'] = result_id
+    
+    return result_dict
 
 # Helper functions
 def _generate_feedback_summary(overall_score: float, grammar, coherence, relevance) -> str:

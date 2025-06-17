@@ -8,6 +8,9 @@ import PyPDF2
 from docx import Document
 import chardet
 import logging
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +27,7 @@ SPECIAL_CHAR_MAP = {
     'â€™': "'",
     'â€œ': '"',
     'â€': '"',
-    'â€”': '--',
+    'â€"': '--',
     'â€“': '-',
     'â€¦': '...',
     'â€¢': '*',
@@ -36,6 +39,16 @@ SPECIAL_CHAR_MAP = {
     '$': 'USD',
     '¥': 'JPY',
 }
+
+# Download required NLTK data
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
 def expand_special_chars(text: str) -> str:
     """Expand special characters to their standard equivalents.
@@ -50,6 +63,35 @@ def expand_special_chars(text: str) -> str:
         text = text.replace(old, new)
     
     return text
+
+def preprocess_text(text: str) -> List[str]:
+    """
+    Preprocess the input text by:
+    1. Converting to lowercase
+    2. Removing special characters and numbers
+    3. Tokenizing
+    4. Removing stopwords
+    
+    Args:
+        text (str): Input text to preprocess
+        
+    Returns:
+        List[str]: List of preprocessed tokens
+    """
+    # Convert to lowercase
+    text = text.lower()
+    
+    # Remove special characters and numbers
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    
+    # Tokenize
+    tokens = word_tokenize(text)
+    
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words]
+    
+    return tokens
 
 class TextPreprocessor:
     """Utility class for text preprocessing."""
@@ -249,8 +291,8 @@ class TextPreprocessor:
             Text with normalized quotes
         """
         # Smart quotes to regular quotes
-        text = text.replace('“', '"').replace('”', '"')
-        text = text.replace('‘', "'").replace('’', "'")
+        text = text.replace('"', '"').replace('"', '"')
+        text = text.replace("'", "'").replace("'", "'")
         
         # Fix apostrophes
         text = re.sub(r"(\w)'(\w)", r"\1'\2", text)  # Contractions

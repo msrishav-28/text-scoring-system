@@ -147,3 +147,8 @@ export const createWebSocketConnection = (
 
   return ws;
 };
+
+export const getAnalysisResult = async (id: string): Promise<AnalysisResult> => {
+  const response = await api.get<AnalysisResult>(`/analysis/${id}`);
+  return response.data;
+};

@@ -5,6 +5,7 @@ import Navbar from './components/Layout/Navbar';
 import HomePage from './pages/HomePage';
 import AnalysisPage from './pages/AnalysisPage';
 import HistoryPage from './pages/HistoryPage';
+import AnalysisDetailsPage from './pages/AnalysisDetailsPage';
 import { AnalysisProvider } from './contexts/AnalysisContext';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/analysis" element={<AnalysisPage />} />
+              <Route path="/analysis/:id" element={<AnalysisDetailsPage />} />
               <Route path="/history" element={<HistoryPage />} />
             </Routes>
           </main>

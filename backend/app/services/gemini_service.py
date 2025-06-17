@@ -21,7 +21,7 @@ class GeminiService:
         genai.configure(api_key=settings.gemini_api_key)
         
         # Initialize the model
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel(settings.gemini_model)
         
         # Rate limiting
         self.last_request_time = 0
