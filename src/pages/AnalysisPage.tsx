@@ -1,9 +1,12 @@
-// ... other imports
+import React, { useState, useContext } from 'react';
+import { toast } from 'react-toastify';
 import { analyzeText, analyzeFile } from '../services/api';
-// ...
+import { AppContext } from '../context/AppContext';
 
 const AnalysisPage: React.FC = () => {
-  // ... existing states (useState) and context (useContext)
+  const [loading, setLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const { state } = useContext(AppContext);
 
   const handleAnalyze = async (data: { text: string; file?: File }, topic?: string) => {
     setLoading(true);
@@ -11,7 +14,10 @@ const AnalysisPage: React.FC = () => {
       let response;
       // If a file is present and it's not a plain text file, use the analyzeFile service.
       // We also check if the text content is just the placeholder.
-      if (data.file && data.file.type !== 'text/plain' || (data.file && text.startsWith('File ready to analyze:'))) {
+      if (
+        (data.file && data.file.type !== 'text/plain') ||
+        (data.file && data.text.startsWith('File ready to analyze:'))
+      ) {
         response = await analyzeFile(data.file, topic);
       } else {
         // Otherwise, use the analyzeText service
@@ -26,7 +32,11 @@ const AnalysisPage: React.FC = () => {
     }
   };
 
-  // ... rest of the component (return statement)
+  return (
+    <div>
+      {/* Your component JSX here */}
+    </div>
+  );
 };
 
 export default AnalysisPage;
