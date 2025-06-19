@@ -13,14 +13,12 @@ import {
   FiPrinter,
   FiCopy
 } from 'react-icons/fi';
+import { AnalysisResult } from '../../types';
+import { exportAnalysis, downloadFile } from '../../services/api';
+import toast from 'react-hot-toast';
 
 interface ExportOptionsProps {
-  result: {
-    overall_score: number;
-    word_count: number;
-    result_id: string;
-    timestamp: string;
-  };
+  result: AnalysisResult;
 }
 
 const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
@@ -72,17 +70,54 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
 
   const handleExport = async () => {
     setIsExporting(true);
-    
-    // Simulate export
-    setTimeout(() => {
-      setIsExporting(false);
+    try {
+      const exportRequest = {
+        result_id: result.result_id || result.id,
+        format: selectedFormat,
+        include_visualizations: includeVisualizations,
+        include_detailed_feedback: includeDetailedFeedback,
+      };
+
+      const response = await exportAnalysis(exportRequest);
+      
+      // Download the file
+      const downloadUrl = downloadFile(response.download_url.split('/').pop() || '');
+      
+      // Create a temporary link and click it
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `text-analysis.${selectedFormat}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       setExportSuccess(true);
+      toast.success(`${selectedFormat.toUpperCase()} exported successfully!`);
+      
       setTimeout(() => setExportSuccess(false), 3000);
-    }, 2000);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleShare = (method: string) => {
-    console.log(`Sharing via ${method}`);
+    switch (method) {
+      case 'Email':
+        window.location.href = `mailto:?subject=Text Analysis Report&body=Check out my text analysis results: Overall Score: ${result.overall_score}/100`;
+        break;
+      case 'Copy Link':
+        navigator.clipboard.writeText(window.location.href);
+        toast.success('Link copied to clipboard!');
+        break;
+      case 'Print':
+        window.print();
+        break;
+      default:
+        break;
+    }
     setShowShareModal(false);
   };
 
@@ -91,7 +126,8 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl p-8"
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-xl shadow-lg p-8"
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-gray-900">Export Your Analysis</h3>
@@ -220,12 +256,12 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Word Count</span>
-              <span className="font-medium text-gray-900">{result.word_count?.toLocaleString() || '1,234'}</span>
+              <span className="font-medium text-gray-900">{result.word_count.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Analysis Date</span>
               <span className="font-medium text-gray-900">
-                {new Date(result.timestamp || Date.now()).toLocaleDateString()}
+                {new Date(result.timestamp).toLocaleDateString()}
               </span>
             </div>
             <div className="flex justify-between">
@@ -242,7 +278,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
             whileTap={{ scale: 0.98 }}
             onClick={handleExport}
             disabled={isExporting}
-            className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center ${
+            className={`w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center ${
               isExporting
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : exportSuccess
@@ -269,20 +305,42 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
           </motion.button>
 
           <div className="grid grid-cols-3 gap-2">
-            <button className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center">
+            <button 
+              onClick={() => handleShare('Print')}
+              className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
+            >
               <FiPrinter className="w-4 h-4 mr-1" />
               Print
             </button>
-            <button className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center">
+            <button 
+              onClick={() => handleShare('Email')}
+              className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
+            >
               <FiMail className="w-4 h-4 mr-1" />
               Email
             </button>
-            <button className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center">
+            <button 
+              onClick={() => handleShare('Copy Link')}
+              className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
+            >
               <FiCopy className="w-4 h-4 mr-1" />
               Copy
             </button>
           </div>
         </div>
+
+        {/* Tips */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4"
+        >
+          <p className="text-sm text-blue-800">
+            <strong>Tip:</strong> PDF format is best for sharing professional reports,
+            while CSV is ideal for further data analysis in spreadsheet applications.
+          </p>
+        </motion.div>
       </motion.div>
 
       {/* Share Modal */}
@@ -313,7 +371,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
               </div>
               
               <div className="space-y-2">
-                {['Email', 'Copy Link', 'Download'].map((method) => (
+                {['Email', 'Copy Link', 'Print'].map((method) => (
                   <button
                     key={method}
                     onClick={() => handleShare(method)}

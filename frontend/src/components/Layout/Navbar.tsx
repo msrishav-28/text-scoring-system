@@ -1,64 +1,69 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiFileText, FiClock } from 'react-icons/fi';
+import { FiHome, FiFileText, FiClock, FiPlus } from 'react-icons/fi';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
-    { path: '/', label: 'Home', icon: FiFileText },
+    { path: '/', label: 'Home', icon: FiHome },
     { path: '/analysis', label: 'Analyze', icon: FiFileText },
     { path: '/history', label: 'History', icon: FiClock },
   ];
 
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center space-x-3 group">
             <motion.div
-              className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl"
-              whileHover={{ scale: 1.05 }}
+              className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:shadow-lg transition-shadow"
+              whileHover={{ scale: 1.05, rotate: -5 }}
               whileTap={{ scale: 0.95 }}
             >
               T
             </motion.div>
-            <span className="ml-3 text-xl font-semibold text-gray-800">
+            <span className="text-xl font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
               TextScore Pro
             </span>
           </Link>
 
           {/* Navigation Items */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const active = isActive(item.path);
+              
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="relative"
+                  className="relative px-1"
                 >
                   <motion.div
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                      isActive
-                        ? 'text-primary-600 font-medium'
-                        : 'text-gray-600 hover:text-primary-600'
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      active
+                        ? 'text-primary-600 bg-primary-50'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
                   </motion.div>
-                  {isActive && (
+                  {active && (
                     <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500"
+                      className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary-500 rounded-full"
                       layoutId="navbar-indicator"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
                 </Link>
@@ -66,14 +71,22 @@ const Navbar: React.FC = () => {
             })}
           </div>
 
+          {/* Mobile Menu Button */}
+          <button className="md:hidden p-2 text-gray-600 hover:text-gray-900">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
           {/* CTA Button */}
           <motion.button
-            className="bg-gradient-to-r from-primary-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.href = '/analysis'}
+            className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-purple-600 text-white px-5 py-2.5 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/analysis')}
           >
-            New Analysis
+            <FiPlus className="w-4 h-4" />
+            <span>New Analysis</span>
           </motion.button>
         </div>
       </div>
