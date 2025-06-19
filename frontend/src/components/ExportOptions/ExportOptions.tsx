@@ -71,8 +71,14 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
   const handleExport = async () => {
     setIsExporting(true);
     try {
+      // Ensure we have a valid result_id
+      const resultId = result.result_id || result.id;
+      if (!resultId) {
+        throw new Error('No result ID available for export');
+      }
+
       const exportRequest = {
-        result_id: result.result_id || result.id,
+        result_id: resultId,
         format: selectedFormat,
         include_visualizations: includeVisualizations,
         include_detailed_feedback: includeDetailedFeedback,
@@ -80,13 +86,16 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
 
       const response = await exportAnalysis(exportRequest);
       
-      // Download the file
-      const downloadUrl = downloadFile(response.download_url.split('/').pop() || '');
+      // Properly construct the download URL
+      const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const filename = response.download_url.replace('/download/', '');
+      const downloadUrl = `${baseUrl}/download/${filename}`;
       
-      // Create a temporary link and click it
+      // Download the file
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `text-analysis.${selectedFormat}`;
+      link.download = `text-analysis-${Date.now()}.${selectedFormat}`;
+      link.target = '_blank'; // Open in new tab to avoid navigation issues
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -95,9 +104,10 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({ result }) => {
       toast.success(`${selectedFormat.toUpperCase()} exported successfully!`);
       
       setTimeout(() => setExportSuccess(false), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Export error:', error);
-      toast.error('Failed to export. Please try again.');
+      const errorMessage = error.response?.data?.detail || 'Failed to export. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsExporting(false);
     }

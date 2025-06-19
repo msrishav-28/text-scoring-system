@@ -72,8 +72,8 @@ export interface CoherenceConnection {
 }
 
 export interface AnalysisResult {
-  id: string;
-  result_id: string;
+  id?: string;
+  result_id?: string;
   text: string;
   topic?: string;
   overall_score: number;

@@ -296,8 +296,11 @@ const AnalysisPage: React.FC = () => {
   };
 
   const handleViewDetails = () => {
-    if (currentAnalysis && (currentAnalysis.result_id || currentAnalysis.id)) {
-      navigate(`/analysis/${currentAnalysis.result_id || currentAnalysis.id}`);
+    const analysisId = currentAnalysis?.result_id || currentAnalysis?.id;
+    if (currentAnalysis && analysisId) {
+      navigate(`/analysis/${analysisId}`);
+    } else {
+      toast.error('Unable to view details. Please try again.');
     }
   };
 

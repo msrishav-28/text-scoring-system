@@ -199,11 +199,12 @@ async def analyze_text(input_data: TextInput):
         # Store in database
         result_id = str(uuid.uuid4())
         db_service.store_result(result_id, input_data.text, input_data.topic, result)
-        
-        # Add result_id to response
+
+        # Add both id and result_id to response for compatibility
         result_dict = result.dict()
         result_dict['result_id'] = result_id
-        
+        result_dict['id'] = result_id  # Add this for compatibility
+
         return result_dict
         
     except Exception as e:
@@ -294,7 +295,7 @@ async def export_analysis(export_request: ExportRequest):
             export_request.include_detailed_feedback
         )
         
-        # Generate download URL (in production, use proper file serving)
+        # Generate download URL
         download_url = f"/download/{file_path.name}"
         
         return ExportResponse(

@@ -99,7 +99,13 @@ class DatabaseService:
             conn.close()
             
             if row:
-                return AnalysisResult(**json.loads(row[0]))
+                result_data = json.loads(row[0])
+                # Ensure id field exists
+                if 'id' not in result_data:
+                    result_data['id'] = result_id
+                if 'result_id' not in result_data:
+                    result_data['result_id'] = result_id
+                return AnalysisResult(**result_data)
             return None
             
         except Exception as e:
@@ -174,4 +180,4 @@ class DatabaseService:
             
         except Exception as e:
             logger.error(f"Database delete error: {e}")
-            return False 
+            return False

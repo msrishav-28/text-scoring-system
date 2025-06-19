@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 import time
 import logging
+import re
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -85,23 +86,26 @@ class BaseAnalyzer(ABC):
     
     def get_text_statistics(self, text: str) -> Dict[str, Any]:
         """Get basic statistics about the text.
-        
+    
         Args:
             text: Text to analyze
-            
+        
         Returns:
             Dictionary with text statistics
         """
         sentences = self._split_sentences(text)
         paragraphs = text.split('\n\n')
-        words = text.split()
-        
+    
+        # Improved word counting - matches common word counting tools
+        # This regex finds all word characters, including contractions
+        words = re.findall(r"\b\w+(?:'\w+)?\b", text)
+    
         return {
             'word_count': len(words),
             'sentence_count': len(sentences),
-            'paragraph_count': len(paragraphs),
+            'paragraph_count': len([p for p in paragraphs if p.strip()]),
             'avg_sentence_length': len(words) / len(sentences) if sentences else 0,
-            'avg_paragraph_length': len(sentences) / len(paragraphs) if paragraphs else 0
+            'avg_paragraph_length': len(sentences) / len([p for p in paragraphs if p.strip()]) if paragraphs else 0
         }
     
     def _split_sentences(self, text: str) -> list:
